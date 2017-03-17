@@ -8,6 +8,7 @@ import com.android.volley.toolbox.Volley;
 
 /**
  * Created by Ahmed Maghawry on 3/16/2017.
+ * The Singlton of the Volley To Deal with different requests and cache them
  */
 public class VolleySinglton {
 

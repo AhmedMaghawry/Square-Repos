@@ -20,19 +20,26 @@ import java.util.List;
 
 /**
  * Created by Ahmed Maghawry on 3/17/2017.
+ * HTTPUrlConnection implementation which extends AsyncTask its parameter is the url
+ * and its output is the arrayList of Repos to diplay in recycleview
+ * This class must extends JsonParser but because it extends AsyncTask (in java) we can't extends another
+ * class (JsonParser) so i used JsonParser as Object
  */
 public class JsonParserHTTP extends AsyncTask<String, Void, ArrayList> {
 
-    private List<String> reposName = new ArrayList<>();
-    private List<String> reposOwner = new ArrayList<>();
-    private List<String> reposDescription = new ArrayList<>();
-    private List<String> reposAvatarURL = new ArrayList<>();
-    private List<String> reposURL = new ArrayList<>();
-    private List<String> reposURLOfOwner = new ArrayList<>();
-    private ArrayList<List> repos = new ArrayList<>();
+    /**
+     * because can't be extended
+     * and it si the main reason for creating the dummy method
+     */
+    private JsonParser jsonParser = new JsonParser() {
+        @Override
+        public void dummy() {
+            //Don't Do No thing Just to make the JsonParse class abstract
+        }
+    };
 
     @Override
-    protected ArrayList doInBackground(String... params) {
+    protected ArrayList<Repository> doInBackground(String... params) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String jsonStr = null;
@@ -62,11 +69,10 @@ public class JsonParserHTTP extends AsyncTask<String, Void, ArrayList> {
                 return null;
             }
             jsonStr = buffer.toString();
-            Log.i("Json", jsonStr);
-            fillArrays(jsonStr);
+            jsonParser.fillArrays(jsonStr);
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attemping
+            // If the code didn't successfully get the data, there's no point in attemping
             // to parse it.
             return null;
         } catch (JSONException e) {
@@ -83,32 +89,7 @@ public class JsonParserHTTP extends AsyncTask<String, Void, ArrayList> {
                 }
             }
         }
-        repos.add(reposName);
-        repos.add(reposOwner);
-        repos.add(reposDescription);
-        repos.add(reposAvatarURL);
-        repos.add(reposURL);
-        repos.add(reposURLOfOwner);
-        return repos;
-    }
-    private void fillArrays(String cont) throws JSONException{
-        JSONArray totalReposArray = new JSONArray(cont);
-        for (int i = 0; i < totalReposArray.length(); i++) {
-            JSONObject repo = totalReposArray.getJSONObject(i);
-            String repoName = repo.getString("name");
-            reposName.add(repoName);
-            String repoDescription = repo.getString("description");
-            reposDescription.add(repoDescription);
-            String repoUrl = repo.getString("html_url");
-            reposURL.add(repoUrl);
-            String repoOwner = repo.getString("owner");
-            JSONObject repoOwn = new JSONObject(repoOwner);
-            String repoUsername = repoOwn.getString("login");
-            reposOwner.add(repoUsername);
-            String repoAvatar = repoOwn.getString("avatar_url");
-            reposAvatarURL.add(repoAvatar);
-            String userURL = repoOwn.getString("html_url");
-            reposURLOfOwner.add(userURL);
-        }
+        jsonParser.createRepos();
+        return jsonParser.getList();
     }
 }

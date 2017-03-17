@@ -16,6 +16,7 @@ import java.util.List;
 
 /**
  * Created by Ahmed Maghawry on 3/16/2017.
+ * Place holder which takes the data from the Repos and put them in the Recycle view List
  */
 public class ReposAdabter extends RecyclerView.Adapter<ReposAdabter.MyViewHolder> {
 
@@ -55,6 +56,7 @@ public class ReposAdabter extends RecyclerView.Adapter<ReposAdabter.MyViewHolder
         holder.repoName.setText(repo.getRepoName());
         holder.repoOwner.setText(repo.getRepoOwner());
         holder.repoDescription.setText((repo.getRepoDescription().equals("null")) ? "No Description" : repo.getRepoDescription());
+        //Using the Picasso library to view the avatar
         Picasso .with(context)
                 .load(repo.getRepoAvatarUrl())
                 .resize(100,100)

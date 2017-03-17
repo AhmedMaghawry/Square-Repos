@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Square-Repos</string>
+    <string name="URL">https://api.github.com/users/Square/repos</string>
 </resources>

@@ -6,10 +6,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.ahmedmaghawry.square_repos.View.MainActivity;
-
 /**
  * Created by Ahmed Maghawry on 3/17/2017.
+ * implementation of the Recycle view Listener to use it later in the main activity
  */
 public class RecycleTouchListner implements RecyclerView.OnItemTouchListener {
 
