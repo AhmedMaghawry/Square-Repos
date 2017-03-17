@@ -25,6 +25,7 @@ import com.ahmedmaghawry.square_repos.R;
 import com.android.volley.Cache;
 import com.android.volley.Network;
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.BasicNetwork;
@@ -37,6 +38,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -54,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
     private List<String> reposURL = new ArrayList<>();
     private List<String> reposURLOfOwner = new ArrayList<>();
     private ArrayList<List> repos = new ArrayList<>();
-    private AlertDialog.Builder dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addOnItemTouchListener(new RecycleTouchListner(getApplicationContext(), recyclerView, new RecycleListner() {
             @Override
             public void onClick(View view, int position) {
-                Toast.makeText(getApplication(),"Item Clicked",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplication(), "Item Clicked", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -84,25 +85,40 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(browse);
                     }
                 })
-                .setPositiveButton("Repositpry", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(reposURL.get(position)));
-                        startActivity(browse);
-                    }
-                })
-                .show();
+                        .setPositiveButton("Repositpry", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(reposURL.get(position)));
+                                startActivity(browse);
+                            }
+                        })
+                        .show();
             }
         }));
-        //getDataFromAPIUsingVolley();
-        getDataFromAPIUsingHTTP();
-        createRepos();
+        getDataFromAPIUsingVolley();
+        //getDataFromAPIUsingHTTP();
         adapter.notifyDataSetChanged();
     }
 
-    private void goTo(String url) {
-        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(browse);
+    private void fillArrays(String cont) throws JSONException{
+        JSONArray totalReposArray = new JSONArray(cont);
+        for (int i = 0; i < totalReposArray.length(); i++) {
+            JSONObject repo = totalReposArray.getJSONObject(i);
+            String repoName = repo.getString("name");
+            reposName.add(repoName);
+            String repoDescription = repo.getString("description");
+            reposDescription.add(repoDescription);
+            String repoUrl = repo.getString("html_url");
+            reposURL.add(repoUrl);
+            String repoOwner = repo.getString("owner");
+            JSONObject repoOwn = new JSONObject(repoOwner);
+            String repoUsername = repoOwn.getString("login");
+            reposOwner.add(repoUsername);
+            String repoAvatar = repoOwn.getString("avatar_url");
+            reposAvatarURL.add(repoAvatar);
+            String userURL = repoOwn.getString("html_url");
+            reposURLOfOwner.add(userURL);
+        }
     }
 
     private void getDataFromAPIUsingHTTP() {
@@ -119,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
         reposAvatarURL = repos.get(3);
         reposURL = repos.get(4);
         reposURLOfOwner = repos.get(5);
+        createRepos();
     }
 
     private void createRepos() {
@@ -149,6 +166,8 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 reposList = parser.getList();
+                adapter.notifyDataSetChanged();
+                Log.i("Test Size4", reposList.get(0).getRepoName());
             }
         }, new Response.ErrorListener() {
             @Override
@@ -157,5 +176,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         VolleySinglton.getInstance(this).addToRequestQueue(jsonArrayRequest);
+        Cache cache = VolleySinglton.getInstance(this).getRequestQueue().getCache();
+        Cache.Entry entry = cache.get("https://api.github.com/users/Square/repos");
+        if(entry != null) {
+            try {
+                String data = new String(entry.data,"UTF-8");
+                fillArrays(data);
+                createRepos();
+                Log.i("Test Imp",data);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

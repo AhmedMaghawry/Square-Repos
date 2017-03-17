@@ -14,40 +14,20 @@ import java.util.List;
 /**
  * Created by Ahmed Maghawry on 3/17/2017.
  */
-public class JsonParserVolley {
+public abstract class JsonParser {
 
-    private JSONArray json;
-    private List<Repository> reposList = new ArrayList<>();
     private List<String> reposName = new ArrayList<>();
     private List<String> reposOwner = new ArrayList<>();
     private List<String> reposDescription = new ArrayList<>();
     private List<String> reposAvatarURL = new ArrayList<>();
     private List<String> reposURL = new ArrayList<>();
     private List<String> reposURLOfOwner = new ArrayList<>();
+    private ArrayList<List> repos = new ArrayList<>();
 
-    public JsonParserVolley(JSONArray json) throws JSONException {
-        this.json = json;
-        fillTheList();
-        createRepos();
-    }
-
-    private void createRepos() {
-        for(int i = 0; i < reposName.size(); i++) {
-            Repository repo = new Repository();
-            repo.setRepoName(reposName.get(i))
-                    .setRepoOwner(reposOwner.get(i))
-                    .setRepoDescription(reposDescription.get(i))
-                    .setRepoAvatarUrl(reposAvatarURL.get(i))
-                    .setRepoUrl(reposURL.get(i))
-                    .setRepoUrlOwner(reposURLOfOwner.get(i));
-            reposList.add(repo);
-        }
-        Log.i("Test Size3", reposList.size()+"");
-    }
-
-    private void fillTheList() throws JSONException {
-        for (int i = 0; i < json.length(); i++) {
-            JSONObject repo = json.getJSONObject(i);
+    private void fillArrays(String cont) throws JSONException {
+        JSONArray totalReposArray = new JSONArray(cont);
+        for (int i = 0; i < totalReposArray.length(); i++) {
+            JSONObject repo = totalReposArray.getJSONObject(i);
             String repoName = repo.getString("name");
             reposName.add(repoName);
             String repoDescription = repo.getString("description");
@@ -65,7 +45,16 @@ public class JsonParserVolley {
         }
     }
 
-    public List<Repository> getList() {
-        return reposList;
-    }
+    /*private void createRepos() {
+        for(int i = 0; i < reposName.size(); i++) {
+            Repository repo = new Repository();
+            repo.setRepoName(reposName.get(i))
+                    .setRepoOwner(reposOwner.get(i))
+                    .setRepoDescription(reposDescription.get(i))
+                    .setRepoAvatarUrl(reposAvatarURL.get(i))
+                    .setRepoUrl(reposURL.get(i))
+                    .setRepoUrlOwner(reposURLOfOwner.get(i));
+            repos.add(repo);
+        }
+    }*/
 }
