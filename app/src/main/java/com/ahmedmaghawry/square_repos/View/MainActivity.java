@@ -1,14 +1,23 @@
 package com.ahmedmaghawry.square_repos.View;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Toast;
 
 import com.ahmedmaghawry.square_repos.Control.JsonParserHTTP;
 import com.ahmedmaghawry.square_repos.Control.JsonParserVolley;
+import com.ahmedmaghawry.square_repos.Control.RecycleListner;
+import com.ahmedmaghawry.square_repos.Control.RecycleTouchListner;
 import com.ahmedmaghawry.square_repos.Control.ReposAdabter;
 import com.ahmedmaghawry.square_repos.Control.VolleySinglton;
 import com.ahmedmaghawry.square_repos.Model.Repository;
@@ -38,6 +47,14 @@ public class MainActivity extends AppCompatActivity {
     private List<Repository> reposList = new ArrayList();
     private ReposAdabter adapter;
     private RecyclerView recyclerView;
+    private List<String> reposName = new ArrayList<>();
+    private List<String> reposOwner = new ArrayList<>();
+    private List<String> reposDescription = new ArrayList<>();
+    private List<String> reposAvatarURL = new ArrayList<>();
+    private List<String> reposURL = new ArrayList<>();
+    private List<String> reposURLOfOwner = new ArrayList<>();
+    private ArrayList<List> repos = new ArrayList<>();
+    private AlertDialog.Builder dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,18 +66,71 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this)
+                .setTitle("Go To")
+                .setMessage("Choose the url you want to go :");
+        recyclerView.addOnItemTouchListener(new RecycleTouchListner(getApplicationContext(), recyclerView, new RecycleListner() {
+            @Override
+            public void onClick(View view, int position) {
+                Toast.makeText(getApplication(),"Item Clicked",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLongClick(View view, final int position) {
+                dialog.setNegativeButton("Owner", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(reposURLOfOwner.get(position)));
+                        startActivity(browse);
+                    }
+                })
+                .setPositiveButton("Repositpry", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(reposURL.get(position)));
+                        startActivity(browse);
+                    }
+                })
+                .show();
+            }
+        }));
         //getDataFromAPIUsingVolley();
         getDataFromAPIUsingHTTP();
+        createRepos();
         adapter.notifyDataSetChanged();
+    }
+
+    private void goTo(String url) {
+        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browse);
     }
 
     private void getDataFromAPIUsingHTTP() {
         try {
-            reposList = new JsonParserHTTP().execute("https://api.github.com/users/Square/repos").get();
+            repos = new JsonParserHTTP().execute("https://api.github.com/users/Square/repos").get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
+        }
+        reposName = repos.get(0);
+        reposOwner = repos.get(1);
+        reposDescription = repos.get(2);
+        reposAvatarURL = repos.get(3);
+        reposURL = repos.get(4);
+        reposURLOfOwner = repos.get(5);
+    }
+
+    private void createRepos() {
+        for(int i = 0; i < reposName.size(); i++) {
+            Repository repo = new Repository();
+            repo.setRepoName(reposName.get(i))
+                    .setRepoOwner(reposOwner.get(i))
+                    .setRepoDescription(reposDescription.get(i))
+                    .setRepoAvatarUrl(reposAvatarURL.get(i))
+                    .setRepoUrl(reposURL.get(i))
+                    .setRepoUrlOwner(reposURLOfOwner.get(i));
+            reposList.add(repo);
         }
     }
 
@@ -74,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                 json = response;
                 JsonParserVolley parser = null;
                 try {
-                    parser = new JsonParserVolley(json, reposList);
+                    parser = new JsonParserVolley(json);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
